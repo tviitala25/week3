@@ -1,0 +1,2 @@
+# Run the automated system report script every minute
+* * * * * /home/ubuntu/week3/generate_report.sh
