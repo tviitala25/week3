@@ -30,42 +30,38 @@ UPTIME_TEXT=$(uptime -p)
 DISK_USAGE=$(df -P / | awk 'NR == 2 {print $5}')
 DISK_STATUS=$(check_disk_status)
 
-# Extract total and available memory in MiB from free -m
-# free -m output format:
-# mem:  total  used  free  shared  buff/cache  available
+# Extract total and available memory in MiB
 MEM_TOTAL=$(free -m | awk '/Mem:/ {print $2}')
 MEM_AVAILABLE=$(free -m | awk '/Mem:/ {print $7}')
 
-# GitHub repository URL for the footer link
-GITHUB_URL="https://github.com/tviitala25/week3"
-
-# Generate the HTML using your teacher's template
+# Generate the HTML template
 cat > "$TEMP_FILE" <<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Week 3 – Server Status Report</title>
+    <title>Week 3: Server status report</title>
     <style>
         body {
-            font-family: system-ui, sans-serif;
-            max-width: 900px;
+            font-family: sans-serif;
+            max-width: 800px;
             margin: 40px auto;
             padding: 0 20px;
             line-height: 1.6;
-            background: #f1f5f9;
-            color: #172033;
+            background: #f4f4f6;
+            color: #203040;
         }
 
         h1, h2 {
-            color: #173b65;
+            color: #2c3e50;
+	    line-height: 1.2;
         }
 
         section {
-            margin: 24px 0;
+            margin: 12px 0;
             padding: 24px;
-            background: white;
+	    background: white;
             border-radius: 12px;
         }
 
@@ -106,9 +102,8 @@ cat > "$TEMP_FILE" <<EOF
 </head>
 <body>
     <header>
-        <h1>Server Status Report</h1>
-        <p>Week 3: Linux command line and Bash scripting</p>
-        <p>Automated system metrics report running on CSC Pouta VM.</p>
+        <h1>Week 3: Server status report</h1>
+        <p>Automated system metrics report using Linux command line and Bash scripting.</p>
     </header>
 
     <section>
@@ -152,126 +147,18 @@ cat > "$TEMP_FILE" <<EOF
         </div>
 
         <p>
-            Disk space status is <strong>OK</strong> below 80% usage
-            and <strong>WARNING</strong> at 80% or above.
+            Disk space status is <strong>OK</strong> at <80% and <strong> WARNING</strong> at ≥80% usage.
         </p>
 
-        <p class="note">
-            Bash generates this report once per minute.
-            Wait approximately 1–2 minutes and reload the page
-            to see a new generation time.
-        </p>
-    </section>
-
-    <section>
-        <h2>Commands used</h2>
-        <ul>
-            <li>
-                <code>date</code>:
-                displays the current date, time and time zone
-                using the format specified in the script.
-            </li>
-            <li>
-                <code>uptime -p</code>:
-                displays how long the server has been running.
-            </li>
-            <li>
-                <code>df -P / | awk 'NR == 2 {print \$5}'</code>:
-                passes filesystem information to awk, which extracts
-                the usage percentage from the second row.
-            </li>
-            <li>
-                <code>free -m</code>:
-                displays memory information in mebibytes (MiB).
-            </li>
-        </ul>
-    </section>
-
-    <section>
-        <h2>How the script works</h2>
         <p>
-            The script collects server information using Linux commands
-            and stores the results in Bash variables through command
-            substitution. A function uses an if statement to determine
-            the disk space status.
+            Report updates every minute. Refresh in 1–2 minutes to view the latest timestamp.
         </p>
-        <p>
-            The script generates a temporary HTML file and then moves
-            the completed file into place as index.html.
-            Nginx serves this file at /viikko3/.
-        </p>
-        <p>
-            The disk space function extracts the numeric usage percentage and evaluates it against an 80% threshold using a conditional statement. Piping is used extensively, such as passing <code>df -P /</code> output through <code>awk</code> to isolate the target field.
-        </p>
-    </section>
-
-    <section>
-        <h2>Scheduling</h2>
-        <p>
-            The script is automated using a user crontab entry set to execute once per minute (<code>* * * * *</code>). Cron handles job execution automatically and persists across system reboots.
-        </p>
-    </section>
-
-    <section>
-        <h2>Test results</h2>
-
-        <h3>Syntax check and manual execution</h3>
-        <p>
-            Running <code>bash -n generate_report.sh</code> completed with no syntax errors. Manual execution successfully created and populated the HTML report at the target Nginx location.
-        </p>
-
-        <h3>Disk space status tests</h3>
-        <p>
-            Tested the status logic by temporarily modifying the threshold values in the script logic.
-        </p>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th scope="col">Test input</th>
-                        <th scope="col">Expected status</th>
-                        <th scope="col">Actual status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>50%</td>
-                        <td>OK</td>
-                        <td>OK</td>
-                    </tr>
-                    <tr>
-                        <td>80%</td>
-                        <td>WARNING</td>
-                        <td>WARNING</td>
-                    </tr>
-                    <tr>
-                        <td>90%</td>
-                        <td>WARNING</td>
-                        <td>WARNING</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <h3>Automatic updates</h3>
-        <p>
-            Verified that consecutive automatic updates increment the generation timestamp every minute as expected.
-        </p>
-
-        <h3>Reboot test</h3>
-        <p>
-            Rebooted the VM and verified that both the Week 2 application and the Week 3 automated report resumed serving correctly immediately upon startup.
-        </p>
-    </section>
-
-    <section>
-        <h2>A problem solved or a lesson learned</h2>
-        <p>Ensuring proper file permissions and utilizing temporary files with atomic move operations prevents race conditions where Nginx might attempt to serve an incomplete or partially written HTML document during a cron write cycle.</p>
     </section>
 
     <footer>
-        <p><a href="$GITHUB_URL">View the source code on GitHub</a></p>
+	<p><a href="/">Week 1: Nginx setup</a></p>
+	<p><a href="/week2/">Week 2: Python web app</a></p>
+        <p><a href="https://github.com/tviitala25/week3">GitHub repository</a></p>
     </footer>
 </body>
 </html>
